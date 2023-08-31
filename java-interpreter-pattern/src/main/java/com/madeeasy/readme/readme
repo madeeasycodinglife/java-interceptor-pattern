@@ -1,0 +1,166 @@
+**Java Interceptor Pattern: Cross-Cutting Concerns**
+
+The Interceptor Design Pattern, also known as the "Interceptor Chain" or "Filter Chain" pattern, is used to add behaviors
+or actions to the execution flow of methods or processes without modifying their core logic. It's particularly useful for
+ implementing cross-cutting concerns such as logging, security, validation, and more.
+
+**Example:**
+
+Here's an example of an interceptor pattern in Java that demonstrates a simple logging interceptor:
+
+
+    +-------------------+
+    |   Interceptor     |
+    +-------------------+
+    | + before()        |
+    | + after()         |
+    +-------------------+
+           ^
+           |
+  +-------------------+
+  |  LoggingInterceptor|
+  +-------------------+
+  | + before()        |
+  | + after()         |
+  +-------------------+
+           ^
+           |
+     +-------------------+
+     |   OrderService    |
+     +-------------------+
+     | + placeOrder()    |
+     +-------------------+
+           ^
+           |
+    +-------------------+
+    |   InterceptorChain|
+    +-------------------+
+    | + addInterceptor()|
+    | + execute()       |
+    +-------------------+
+
+
+or
+
+     +-----------------+
+     |   Interceptor   |
+     +-----------------+
+     | + before()      |
+     | + after()       |
+     +-----------------+
+             ^
+             | implements
+             |
+     +-----------------+
+     | LoggingInterceptor |
+     +-----------------+
+     | + before()      |
+     | + after()       |
+     +-----------------+
+             ^
+             | implements
+             |
+     +-----------------+
+     |   OrderService  |
+     +-----------------+
+     | + placeOrder()  |
+     +-----------------+
+             ^
+             | uses
+             |
+     +-----------------+
+     | InterceptorChain|
+     +-----------------+
+     | + addInterceptor|
+     | + execute()     |
+     +-----------------+
+
+
+
+
+```java
+// Interceptor Interface
+interface Interceptor {
+    void before();
+    void after();
+}
+
+// Concrete Interceptor
+class LoggingInterceptor implements Interceptor {
+    @Override
+    public void before() {
+        System.out.println("Before method execution: Logging...");
+    }
+
+    @Override
+    public void after() {
+        System.out.println("After method execution: Logging...");
+    }
+}
+
+// Target Class
+class OrderService {
+    public void placeOrder() {
+        System.out.println("Order placed successfully!");
+    }
+}
+
+// Interceptor Chain
+class InterceptorChain {
+    private List<Interceptor> interceptors = new ArrayList<>();
+    private Object target;
+
+    public InterceptorChain(Object target) {
+        this.target = target;
+    }
+
+    public void addInterceptor(Interceptor interceptor) {
+        interceptors.add(interceptor);
+    }
+
+    public void execute() {
+        interceptors.forEach(Interceptor::before);
+        // Execute target method
+        if (target instanceof OrderService) {
+            ((OrderService) target).placeOrder();
+        }
+        interceptors.forEach(Interceptor::after);
+    }
+}
+
+// Client Code
+public class InterceptorExample {
+    public static void main(String[] args) {
+        OrderService orderService = new OrderService();
+        Interceptor loggingInterceptor = new LoggingInterceptor();
+
+        InterceptorChain chain = new InterceptorChain(orderService);
+        chain.addInterceptor(loggingInterceptor);
+
+        chain.execute();
+    }
+}
+```
+
+**How to Identify When to Apply the Interceptor Design Pattern:**
+
+1. **Cross-Cutting Concerns:** When you have behaviors that need to be applied to multiple methods or processes, such as logging,
+ security, validation, performance monitoring, etc.
+
+2. **Separation of Concerns:** If you want to keep the core logic of your classes clean by separating cross-cutting concerns into
+separate modules.
+
+**Where to Apply the Interceptor Design Pattern:**
+
+- **Logging:** Adding logging to methods or processes for debugging and audit purposes.
+
+- **Security:** Implementing authentication and authorization checks for restricted operations.
+
+- **Validation:** Enforcing data validation rules before method execution.
+
+- **Caching:** Implementing caching mechanisms for frequently used data.
+
+- **Transaction Management:** Managing transactions by starting, committing, or rolling back transactions.
+
+By applying the Interceptor Design Pattern, you can modularize and encapsulate cross-cutting concerns, making your codebase more
+maintainable and flexible while avoiding duplication of behavior across multiple methods or processes.
